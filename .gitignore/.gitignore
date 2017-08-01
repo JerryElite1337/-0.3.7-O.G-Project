@@ -1,0 +1,933 @@
+O.G Project v1.0 //By Jerry [ 0.3.7 ]
+
+{$CLEO}
+{$INCLUDE SF}
+0000:                                                   
+
+REPEAT
+0001: 0
+UNTIL SAMP.Available()
+0AB1: call_scm_func @CheckOnName 0
+0AB1: call_scm_func @CheckOnFile 0
+0AB1: call_scm_func @RadarPos 0
+0C6A: 4@ = create_custom_thread_at_label @FixWIDTH
+0C6A: 5@ = create_custom_thread_at_label @SoundTrack
+0C6A: 0@ = create_custom_thread_at_label @RenderMain
+CHATMSG "{3366FF}[O.G Project]: {FFFFFF}Автор: {FF6060}Jerry{FFFFFF}." 0xFFFFFF
+LOG "{FFFFFF}[{1E90FF}O.G Project{FFFFFF}] ->> [{1E90FF}Loading{FFFFFF}] ->> {00FF7F}Fully loaded{FFFFFF} !"
+LOG "{FFFFFF}[{1E90FF}O.G Project{FFFFFF}] ->> [{1E90FF}Developed{FFFFFF}] ->> Developed by {FF6666}Jerry{FFFFFF} ."
+
+WHILE TRUE                               
+0001: 0
+    IF AND
+    0C89:  key_just_pressed 113
+    8B21: 	samp is_chat_opened
+    8BD5:  samp is_scoreboard_opened
+    8B4C:  samp is_dialog_active -1
+    8C7E:	is_console_active
+    THEN 0B12: 1@ = 1@ XOR 1
+        IF 1@ == TRUE 
+        THEN 0B8D: samp set_cursor_mode 2
+        ELSE 0B8D: samp set_cursor_mode 0
+        END
+    END
+    
+    IF AND
+    0C89:  key_just_pressed 114
+    8B21: 	samp is_chat_opened
+    8BD5:  samp is_scoreboard_opened
+    8B4C:  samp is_dialog_active -1
+    8C7E:	is_console_active
+    THEN
+        IF 00DF:   actor $PLAYER_ACTOR driving
+        THEN
+            03C0: 2@ = actor $PLAYER_ACTOR car
+            0224: set_car 2@ health_to 240
+        ELSE 0223: set_actor $PLAYER_ACTOR health_to 0
+        END
+    END                                                                          
+    
+    IF AND
+    0C89:  key_just_pressed 106
+    8B21: 	samp is_chat_opened
+    8BD5:  samp is_scoreboard_opened
+    8B4C:  samp is_dialog_active -1
+    8C7E:	is_console_active
+    00DF:   actor $PLAYER_ACTOR driving
+    THEN
+        03C0: 2@ = actor $PLAYER_ACTOR car
+        0174: 3@ = car 2@ Z_angle
+        0175: set_car 2@ Z_angle_to 3@
+    END
+    
+    IF AND
+    0AB0:   key_pressed 18
+    8B21: 	samp is_chat_opened
+    8BD5:  samp is_scoreboard_opened
+    8B4C:  samp is_dialog_active -1
+    8C7E:	is_console_active
+    00DF:   actor $PLAYER_ACTOR driving
+    THEN
+        03C0: 2@ = actor $PLAYER_ACTOR car
+        02E3: 3@ = car 2@ speed
+        3@ *= 1.3 
+        04BA: set_car 2@ speed_to 3@
+        0001: 100
+    END
+    
+    IF AND
+    0AB0:   key_pressed 16
+    0AB0:   key_pressed 55
+    8B21: 	samp is_chat_opened
+    8BD5:  samp is_scoreboard_opened
+    8B4C:  samp is_dialog_active -1
+    8C7E:	is_console_active
+    THEN
+        0B32: samp send_spawn
+        REPEAT
+        0001: 0
+        UNTIL 8AB0:   key_pressed 16
+        
+        REPEAT
+        0001: 0
+        UNTIL 8AB0:   key_pressed 55  
+    END
+    
+    IF AND
+    0C89:  key_just_pressed 78
+    8B21: 	samp is_chat_opened
+    8BD5:  samp is_scoreboard_opened
+    8B4C:  samp is_dialog_active -1
+    8C7E:	is_console_active
+    00DF:   actor $PLAYER_ACTOR driving
+    THEN
+        04C4: store_coords_to 5@ 6@ 7@ from_actor $PLAYER_ACTOR with_offset 0.0 0.0 1.0
+        0362: remove_actor $PLAYER_ACTOR from_car_and_place_at 5@ 6@ 7@
+    END
+END
+
+:CheckOnName
+IF 8AAB:   file_exists "CLEO\!O.G_Project_By_Jerry.CS"
+THEN
+    0B28: samp disconnect_with_reason 0
+    0A93: end_custom_thread
+END
+RET 0
+
+:CheckOnFile
+IF 8AAB:   file_exists "CLEO\!O.G_Project\!Logo.PNG"
+THEN
+    0B28: samp disconnect_with_reason 0
+    0A93: end_custom_thread
+END
+RET 0
+
+:FixWIDTH //SR_Team
+0AC6: 0@ = label @HOOK_WIDTH offset
+0AB1: @asm_jmp_hook 3 offset 0x00718D12 function 0@ virtual_protect 1   
+0A8C: write_memory 0x00718D17 size 1 value 0x90 virtual_protect 1 //NOP
+0@ += 0xF     
+0AB1: @asm_jmp_hook 3 offset 0@ function 0x00718D18 virtual_protect 1 
+
+WHILE TRUE
+0001: 0
+END
+
+:HOOK_WIDTH
+hex
+ BF 00002042           // mov edi,42200000 { 40.00 }
+ 57                    // push edi
+ D8 0C 24              // fmul dword ptr [esp]
+ 5F                    // pop edi
+ BF 00000000           // mov edi,00000000 { 0 }
+ E9 00718D18           // jmp gta_sa.exe+318D18
+end // hex
+
+//0AB1: @asm_jmp_hook 3 offset 1@ function 2@ virtual_protect 1
+:asm_jmp_hook
+0A8C: write_memory 0@ size 1 value 0xE9 virtual_protect 2@
+0062: 1@ -= 0@ // (int)
+000E: 1@ -= 5
+0@ += 1
+0A8C: write_memory 0@ size 4 value 1@ virtual_protect 2@
+0AB2: ret 0
+
+:RadarPos //SR_Team
+VAR
+    3@: float
+    4@: float
+    5@: float
+    6@: float  
+END
+0A8D: 3@ = read_memory 0x00858A10 size 4 virtual_protect 1 //X
+0A8D: 4@ = read_memory 0x00866B70 size 4 virtual_protect 1 //Y
+//0AB1: call_scm_func @0A8F_Float 2 448.0 minus 4@ result 4@
+0A8D: 5@ = read_memory 0x00866B78 size 4 virtual_protect 1 //W
+0A8D: 6@ = read_memory 0x00866B74 size 4 virtual_protect 1 //H
+5@ += 3@
+6@ += 4@
+4@ += 10.0      
+0A8C: write_memory 0x00858A10 size 4 value 3@ virtual_protect 1
+0A8C: write_memory 0x00866B70 size 4 value 4@ virtual_protect 1 
+RET 0
+
+:0A8F_Float
+VAR
+    0@: float
+    1@: float
+END 
+0@ -= 1@
+RET 1 0@
+
+:SoundTrack
+0A8D: 0@ = read_memory 0xBA6798 size 1 virtual_protect 1
+0A8C: write_memory 0xBA6798 size 1 value 1 virtual_protect 1
+0B71: render 1@ = load_texture_from_file "CLEO\!O.G_Project\!Logo.PNG"
+0952: load_soundtrack 11
+0954: start_playing_loaded_soundtrack 
+2@ = TRUE
+3@ = 255
+
+WHILE TRUE
+0001: 0
+    IF 2@ == TRUE
+    THEN
+        0B5A: get_screen_resolution 4@ 5@
+        4@ /= 2
+        5@ /= 2
+        4@ -= 256
+        5@ -= 128
+        0B67: render a 3@ r 255 g 255 b 255 to_argb 6@
+        0B73: render draw_texture 1@ pos 4@ 5@ size 512 256 rotation 0 color 6@
+        3@ -= 1
+        
+        IF 3@ == FALSE
+        THEN
+            0A8C: write_memory 0xBA6798 size 1 value 0@ virtual_protect 1
+            0B72: render release_texture 1@
+            2@ = FALSE
+        END
+    END       
+END
+
+:RenderMain
+0B6D: render 0@ = create_font "Arial" height 9 flags 5
+0A8D: 1@ = read_memory 0x740460 size 1 virtual_protect 1
+0BE1: raknet setup_outcoming_rpc_hook @oRPC_Death
+0BE2: raknet setup_outcoming_packet_hook @oPacket_UnderInvisible
+0B12: 6@ = 6@ XOR 1
+0B12: 7@ = 7@ XOR 1
+0B12: 8@ = 8@ XOR 1
+WHILE TRUE
+0001: 0
+    IF 0C89:  key_just_pressed 119
+    THEN 0001: 150
+    ELSE
+        IF 8118:   actor $PLAYER_ACTOR dead
+        THEN
+            0B5A: get_screen_resolution 2@ 3@
+            0B5A: get_screen_resolution 4@ 3@
+            0062: 2@ -= 2@
+            3@ -= 45
+            0B69: render draw_box_pos 2@ 3@ size 4@ 50 color 0xF5000000
+            3@ += 15
+                
+            IF 5@ == TRUE
+            THEN
+            0B6F: render font 0@ draw_text "[{B8F034}GodMode{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[GodMode]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 5@ = 5@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}GodMode{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[GodMode]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 5@ = 5@ XOR 1
+                    END
+                END
+            END
+            
+            IF 5@ == TRUE
+            THEN
+                0AB1: call_scm_func @GMCar 0
+                0A8C: write_memory 0x96916D size 1 value 1 virtual_protect 1
+                02AB: set_actor $PLAYER_ACTOR immunities BP 1 FP 1 EP 1 CP 1 MP 1
+            ELSE
+                    0A8C: write_memory 0x96916D size 1 value 0 virtual_protect 1
+                    02AB: set_actor $PLAYER_ACTOR immunities BP 0 FP 0 EP 0 CP 0 MP 0
+            END
+                
+            IF 0C89:  key_just_pressed 45
+            THEN 0B12: 5@ = 5@ XOR 1 
+            END
+                
+            2@ += 70
+            IF 6@ == TRUE   
+            THEN
+            0330: set_player $PLAYER_CHAR infinite_run 1
+            0B6F: render font 0@ draw_text "[{B8F034}InfiniteRun{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[InfiniteRun]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 6@ = 6@ XOR 1
+                    END
+                END
+            ELSE
+            0330: set_player $PLAYER_CHAR infinite_run 0
+            0B6F: render font 0@ draw_text "[{D92D06}InfiniteRun{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[InfiniteRun]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 6@ = 6@ XOR 1
+                    END
+                END
+            END
+                
+            2@ += 81
+            IF 7@ == TRUE
+            THEN
+            0A8C: write_memory 0x96916E size 1 value 1 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{B8F034}InfiniteOxygen{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[InfiniteOxygen]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 7@ = 7@ XOR 1
+                    END
+                END
+            ELSE
+            0A8C: write_memory 0x96916E size 1 value 1 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{D92D06}InfiniteOxygen{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[InfiniteOxygen]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 7@ = 7@ XOR 1
+                    END
+                END
+            END
+                
+            2@ += 105
+            IF 8@ == TRUE
+            THEN
+            08C6: set_actor $PLAYER_ACTOR stay_on_bike 1
+            0B6F: render font 0@ draw_text "[{B8F034}StayOnBike{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[StayOnBike]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 8@ = 8@ XOR 1
+                    END
+                END
+            ELSE
+            08C6: set_actor $PLAYER_ACTOR stay_on_bike 0
+            0B6F: render font 0@ draw_text "[{D92D06}StayOnBike{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[StayOnBike]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 8@ = 8@ XOR 1
+                    END
+                END
+            END  
+                
+            2@ += 86
+            IF 9@ == TRUE
+            THEN
+            0A8C: write_memory 0x96916C size 1 value 1 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{B8F034}HighBounce{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[HighBounce]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 9@ = 9@ XOR 1
+                    END
+                END
+            ELSE
+            0A8C: write_memory 0x96916C size 1 value 0 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{D92D06}HighBounce{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[HighBounce]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 9@ = 9@ XOR 1
+                    END
+                END
+            END 
+                 
+            2@ += 88
+            IF 10@ == TRUE
+            THEN
+            0A8C: write_memory 0x96914C size 1 value 1 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{B8F034}EasyDrive{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[EasyDrive]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 10@ = 10@ XOR 1
+                    END
+                END
+            ELSE
+            0A8C: write_memory 0x96914C size 1 value 0 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{D92D06}EasyDrive{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[EasyDrive]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 10@ = 10@ XOR 1
+                    END
+                END
+            END
+         
+            2@ += 75
+            IF 11@ == TRUE
+            THEN
+            0B6F: render font 0@ draw_text "[{B8F034}+C{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[+C]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 11@ = 11@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}+C{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[+C]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 11@ = 11@ XOR 1
+                    END
+                END
+            END
+            
+            IF AND
+            11@ == TRUE
+            02E0:   actor $PLAYER_ACTOR firing_weapon
+            THEN 0792: disembark_instantly_actor $PLAYER_ACTOR
+            END
+            
+            2@ += 27
+            IF 12@ == TRUE
+            THEN
+            0B6F: render font 0@ draw_text "[{B8F034}NoReload{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[NoReload]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 12@ = 12@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}NoReload{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[NoReload]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 12@ = 12@ XOR 1
+                    END
+                END
+            END
+            
+            IF 12@ == TRUE
+            THEN 0AB1: call_scm_func @NoReload 0
+            END
+            
+            2@ += 72
+            IF 13@ == TRUE
+            THEN
+            0A8C: write_memory 0x969152 size 1 value 1 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{B8F034}DrivingOnWater{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[DrivingOnWater]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 13@ = 13@ XOR 1
+                    END
+                END
+            ELSE
+            0A8C: write_memory 0x969152 size 1 value 0 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{D92D06}DrivingOnWater{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[DrivingOnWater]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 13@ = 13@ XOR 1
+                    END
+                END
+            END
+      
+            2@ += 114
+            IF 14@ == TRUE
+            THEN
+            0B6F: render font 0@ draw_text "[{B8F034}RapidFire{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[RapidFire]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 14@ = 14@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}RapidFire{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[RapidFire]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 14@ = 14@ XOR 1
+                    END
+                END
+            END
+            
+            IF AND
+            14@ == TRUE
+            02E0:   actor $PLAYER_ACTOR firing_weapon
+            THEN
+                0393: actor $PLAYER_ACTOR perform_animation "python_fire" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "python_fire_poor" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "python_crouchfire" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "BUDDY_CROUCHFIRE" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "BUDDY_FIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "BUDDY_FIRE_POOR" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "2GUNS_CROUCHFIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "COLT45_CROUCHFIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "COLT45_FIRE" at at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "COLT45_FIRE_2HANDS" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "RIFLE_CROUCHFIRE" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "RIFLE_FIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "RIFLE_FIRE_POOR" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "SHOTGUN_CROUCHFIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "SHOTGUN_FIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "SHOTGUN_FIRE_POOR" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "SILENCECROUCHFIRE" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "SILENCE_FIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "TEC_CROUCHFIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "TEC_FIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "UZI_CROUCHFIRE" at 13.37 times_normal_rate 
+                0393: actor $PLAYER_ACTOR perform_animation "UZI_FIRE" at 13.37 times_normal_rate
+                0393: actor $PLAYER_ACTOR perform_animation "UZI_FIRE_POOR" at 13.37 times_normal_rate
+            END
+     
+            2@ -= 718
+            3@ += 14
+            IF 15@ == TRUE
+            THEN
+            0A8C: write_memory 0x740460 size 1 value 1 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{B8F034}NoSpread{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[NoSpread]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 15@ = 15@ XOR 1
+                    END
+                END
+            ELSE
+            0A8C: write_memory 0x740460 size 1 value 1@ virtual_protect 1
+            0B6F: render font 0@ draw_text "[{D92D06}NoSpread{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[NoSpread]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 15@ = 15@ XOR 1
+                    END
+                END
+            END
+            
+            2@ += 74
+            IF 16@ == TRUE
+            THEN
+            0A8C: write_memory 0x969178 size 1 value 1 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{B8F034}InfiniteAmmo{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[InfiniteAmmo]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 16@ = 16@ XOR 1
+                    END
+                END
+            ELSE
+            0A8C: write_memory 0x969178 size 1 value 0 virtual_protect 1
+            0B6F: render font 0@ draw_text "[{D92D06}InfiniteAmmo{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[InfiniteAmmo]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 16@ = 16@ XOR 1
+                    END
+                END
+            END
+            
+            2@ += 97
+            IF 17@ == TRUE
+            THEN
+            0B6F: render font 0@ draw_text "[{B8F034}FastRespawn{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[FastRespawn]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 17@ = 17@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}FastRespawn{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[FastRespawn]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 17@ = 17@ XOR 1
+                    END
+                END
+            END
+            
+            2@ += 98
+            IF 18@ == TRUE
+            THEN
+            0B6F: render font 0@ draw_text "[{B8F034}SilentAIM{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[SilentAIM]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 18@ = 18@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}SilentAIM{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[SilentAIM]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 18@ = 18@ XOR 1
+                    END
+                END
+            END
+            
+            IF 18@ == TRUE
+            THEN 0AB1: call_scm_func @SilentAIM 0
+            END
+            
+            2@ += 72
+            IF 19@ == TRUE
+            THEN
+            0B6F: render font 0@ draw_text "[{B8F034}Tracers{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[Tracers]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 19@ = 19@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}Tracers{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[Tracers]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 19@ = 19@ XOR 1
+                    END
+                END
+            END
+            
+            IF 19@ == TRUE
+            THEN 0AB1: call_scm_func @Tracers 0
+            END
+
+            2@ += 62
+            IF 20@ == TRUE
+            THEN                   
+            0B6F: render font 0@ draw_text "[{B8F034}AntiFrag{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[AntiFrag]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 20@ = 20@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}AntiFrag{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[AntiFrag]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 20@ = 20@ XOR 1
+                    END
+                END
+            END
+            
+            2@ += 65
+            IF 22@ == TRUE
+            THEN                   
+            0B6F: render font 0@ draw_text "[{B8F034}RadioDeactivation{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[RadioDeactivation]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 22@ = 22@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}RadioDeactivation{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[RadioDeactivation]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 22@ = 22@ XOR 1
+                    END
+                END
+            END
+            
+            IF AND
+            22@ == TRUE
+            00DF:   actor $PLAYER_ACTOR driving
+            THEN
+                051E: 23@ = get_current_radio_station
+                IF 8039:   23@ == 12
+                THEN 041E: set_radio_station 12
+                END    
+            END
+            
+            2@ += 129
+            IF 24@ == TRUE
+            THEN                   
+            0B6F: render font 0@ draw_text "[{B8F034}UnderInvisible{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[UnderInvisible]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 24@ = 24@ XOR 1
+                    END
+                END
+            ELSE
+            0B6F: render font 0@ draw_text "[{D92D06}UnderInvisible{FFFFFF}]" pos 2@ 3@ color 0xFFFFFFFF
+            0B6B: render 4@ = font 0@ draw_text "[UnderInvisible]" length
+                IF 0AB1: call @is_cursor_here 4 start 2@ 3@ end_offset 4@ 13
+                THEN
+                    IF 0C89:  key_just_pressed 1
+                    THEN 0B12: 24@ = 24@ XOR 1
+                    END
+                END
+            END 
+              
+            2@ -= 597
+            3@ -= 29
+            0AB1: call_scm_func @RenderBar 3 {Font}0@ {X}2@ {Y}3@
+        ELSE
+            IF AND
+            17@ == TRUE
+            0118:   actor $PLAYER_ACTOR dead
+            THEN 0B32: samp send_spawn
+            END
+             
+            0B5A: get_screen_resolution 2@ 3@
+            0B5A: get_screen_resolution 4@ 3@
+            0062: 2@ -= 2@
+            3@ -= 45
+            0B69: render draw_box_pos 2@ 3@ size 4@ 50 color 0xF5000000
+            0B6F: render font 0@ draw_text "Overview by {FFA500}SAMP{FFFFFF}:{1E90FF}PROD" pos 2@ 3@ color 0x98FFFFFF
+            3@ += 13
+            0B6F: render font 0@ draw_text "Developer {FF3333}Jerry" pos 2@ 3@ color 0x98FFFFFF
+            3@ += 13
+            0B6F: render font 0@ draw_text "References: vk.com/{1E90FF}JerryElite1337{FFFFFF}; vk.com/{FFA500}Samp{1E90FF}Prod{FFFFFF}_OFF" pos 2@ 3@ color 0x98FFFFFF
+        END  
+    END
+END
+
+:oRPC_Death
+0BE5: raknet 21@ = get_hook_param 1
+IF AND
+21@ == 53
+20@ == TRUE
+THEN 0BE0: raknet hook_ret FALSE
+ELSE 0BE0: raknet hook_ret TRUE
+END
+
+:oPacket_UnderInvisible
+IF 24@ == TRUE
+THEN
+0BE5: raknet 25@ = get_hook_param PARAM_PACKETID 
+    IF 25@ == PACKET_PLAYER_SYNC 
+    THEN
+        0BE5: raknet 26@ = get_hook_param PARAM_BITSTREAM
+        25@ = FALSE 
+        0BF3: raknet 25@ = bit_stream 26@ get_data_ptr 
+        0C0D: struct 25@ offset 15 size 4 = -15.0 
+    END
+0BE0: raknet hook_ret TRUE
+ELSE 0BE0: raknet hook_ret TRUE
+END 
+
+:is_cursor_here
+0B5E: get_cursor_pos 4@ 5@
+IF AND
+    001D: 4@ > 0@
+    001D: 5@ > 1@
+THEN
+    005A: 0@ += 2@
+    005A: 1@ += 3@
+    IF AND
+        001D: 0@ > 4@
+        001D: 1@ > 5@
+    THEN
+        0485:  RETURN_TRUE
+    ELSE
+        059A:  RETURN_FALSE
+    END
+    0062: 0@ -= 2@
+    0062: 1@ -= 3@
+ELSE
+    059A:  RETURN_FALSE
+END
+RET 0
+
+:GMCar
+IF 00DF:   actor $PLAYER_ACTOR driving
+THEN
+    03C0: 0@ = actor $PLAYER_ACTOR car
+    02AC: set_car 0@ immunities BP 1 FP 1 EP 1 CP 1 MP 1
+ELSE
+    IF 03C0: 0@ = actor $PLAYER_ACTOR car
+    THEN 02AC: set_car 0@ immunities BP 0 FP 0 EP 0 CP 0 MP 0
+    END
+END
+RET 0
+
+:NoReload
+0470: 0@ = actor $PLAYER_ACTOR current_weapon 
+01B2: give_actor $PLAYER_ACTOR weapon 0@ ammo 0
+RET 0
+
+:SilentAIM
+IF 02E0:   actor $PLAYER_ACTOR firing_weapon
+THEN
+    FOR 0@ = 0 TO 1004
+        IF 0B23:  samp is_player_connected 0@
+        THEN 0B20: samp 1@ = actor_handle_by_samp_player_id 0@
+            IF 056D:   actor 1@ defined
+            THEN
+                IF 02CB:   actor 1@ bounding_sphere_visible
+                THEN
+                    00A0: store_actor $PLAYER_ACTOR position_to 2@ 3@ 4@
+                    00A0: store_actor 1@ position_to 5@ 6@ 7@
+                    0470: 8@ = actor $PLAYER_ACTOR current_weapon
+                    0AB1: call_scm_func @BulletSync 12 byteType 1 sTargetID 0@ fOrigin 2@ 3@ 4@ fTarget 5@ 6@ 7@ fCenter 0.0 0.0 0.5 byteWeaponID 8@
+                END
+            END
+        END
+    END
+END
+RET 0
+
+:BulletSync 
+0AC8: 12@ = allocate_memory_size 40 
+0C0D: struct 12@ offset 0 size 1 = 0@ // byteType;
+0C0D: struct 12@ offset 1 size 2 = 1@ // sTargetID;
+0C0D: struct 12@ offset 3 size 4 = 2@ // fOrigin[3];
+0C0D: struct 12@ offset 7 size 4 = 3@ // fOrigin[3];
+0C0D: struct 12@ offset 11 size 4 = 4@ // fOrigin[3];
+0C0D: struct 12@ offset 15 size 4 = 5@ // fTarget[3];
+0C0D: struct 12@ offset 19 size 4 = 6@ // fTarget[3];
+0C0D: struct 12@ offset 23 size 4 = 7@ // fTarget[3];
+0C0D: struct 12@ offset 27 size 4 = 8@ // fCenter[3];
+0C0D: struct 12@ offset 31 size 4 = 9@ // fCenter[3];
+0C0D: struct 12@ offset 35 size 4 = 10@ // fCenter[3];
+0C0D: struct 12@ offset 39 size 1 = 11@ // byteWeaponID;
+0BC4: samp send_bullet_data 12@
+0AC9: free_allocated_memory 12@
+RET 0
+
+:RenderBar
+0B2B: samp 3@ = get_player_id_by_actor_handle $PLAYER_ACTOR
+0B36: samp 4@ = get_player_nickname 3@
+0AB1: call_scm_func @GetLocalTime 0 wHour 5@ wMinute 6@ wSeconds 7@
+0AC8: 8@ = allocate_memory_size 260
+0B3A: samp 8@ = get_current_server_name
+0AC8: 9@ = allocate_memory_size 260
+0B39: samp get_current_server_address 9@ port 10@
+0AC8: 11@ = allocate_memory_size 260
+0AD3: 11@ = format "| [%d]%s || Clock: %d:%d:%d || Server: %s[%s:%d] |" 3@ 4@ 5@ 6@ 7@ 8@ 9@ 10@
+0B6F: render font 0@ draw_text 11@ pos 1@ 2@ color 0xFFFFFFFF
+0AC9: free_allocated_memory 8@
+0AC9: free_allocated_memory 9@
+RET 0
+
+:GetLocalTime
+0AA2: 0@ = load_library "kernel32.dll"
+0AA4: 1@ = get_proc_address "GetLocalTime" library 0@
+0AC8: 2@ = allocate_memory_size 16
+0AA5: call 1@ num_params 1 pop 0 2@
+0085: 3@ = 2@
+
+0A8D: 4@ = read mem 3@ size 2 vp 0
+3@ += 2
+
+0A8D: 5@ = read mem 3@ size 2 vp 0 
+3@ += 2
+
+0A8D: 6@ = read mem 3@ size 2 vp 0 
+3@ += 2
+
+0A8D: 7@ = read mem 3@ size 2 vp 0 
+3@ += 2
+
+0A8D: 8@ = read mem 3@ size 2 vp 0 // wHour
+3@ += 2
+
+0A8D: 9@ = read mem 3@ size 2 vp 0 // wMinute
+3@ += 2
+
+0A8D: 10@ = read mem 3@ size 2 vp 0 // wSecond
+3@ += 2
+
+0A8D: 11@ = read mem 3@ size 2 vp 0
+
+0AC9: free_allocated_memory 2@
+RET 3 8@ 9@ 10@
+
+:Tracers
+IF 0AB1: call_scm_func @MainChecks 0 
+THEN
+    FOR 0@ = 0 to 1004 [STEP = 1]
+        IF 0B23:  samp is_player_connected 0@
+        THEN 0B20: samp 1@ = actor_handle_by_samp_player_id 0@
+            IF 056D:   actor 1@ defined
+            THEN
+                IF 02CB:   actor 1@ bounding_sphere_visible
+                THEN
+                    0B37: samp 2@ = get_player_color 0@
+                    0B66: render ARGB 2@ to_A 2@ R 3@ G 4@ B 5@
+                    0B67: render A 0xFF R 3@ G 4@ B 5@ to_ARGB 2@
+                    0AB1: call_scm_func @GetBonePos 3 $PLAYER_ACTOR 1 2 3@ 4@ 5@ 
+                    0AB1: call_scm_func @GetBonePos 3 1@ 1 2 6@ 7@ 8@ 
+                    0B55: convert_3D_coords 3@ 4@ 5@ to_screen 3@ 4@
+                    0B55: convert_3D_coords 6@ 7@ 8@ to_screen 6@ 7@
+                    0B68: render draw_line_point1 3@ 4@ point2 6@ 7@ width 1 color 2@
+                    0B70: render draw_polygon_pos 3@ 4@ size 9 9 corners 20 rotation 0 color 0x7F000000
+                    0B70: render draw_polygon_pos 6@ 7@ size 9 9 corners 20 rotation 0 color 0x7F000000
+                END 
+            END
+        END
+    END 
+END
+RET 0
+
+:MainChecks
+IF AND
+8C7E:   is_console_active
+8B21:   samp is_chat_opened
+8B4C:   samp is_dialog_active -1
+8BD5:   samp is_scoreboard_opened
+THEN
+END
+RET 0
+
+:GetBonePos
+0A96: 3@ = actor 0@ struct
+0AA6: call_method 0x5E4280 struct 3@ num_params 3 pop 0 1@ 2@ 3@v 
+RET 3 3@ 4@ 5@
